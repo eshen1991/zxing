@@ -56,6 +56,22 @@ public final class BitMatrixTestCase extends Assert {
     }
   }
 
+
+  @Test
+  public void testEshenSetMatrix() {
+
+    BitMatrix matrix = new BitMatrix(64, 32);
+    matrix.set(32,0);
+    matrix.set(0,1);
+   // matrix.set(30,0);
+    matrix.set(2,2);
+    matrix.set(10, 20);
+    matrix.set(12,20);
+    matrix.set(15,20);
+    System.out.println("done");
+
+  }
+
   @Test
   public void testRectangularMatrix() {
     BitMatrix matrix = new BitMatrix(75, 20);

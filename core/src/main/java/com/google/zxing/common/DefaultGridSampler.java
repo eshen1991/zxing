@@ -18,6 +18,9 @@ package com.google.zxing.common;
 
 import com.google.zxing.NotFoundException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Sean Owen
  */
@@ -51,6 +54,7 @@ public final class DefaultGridSampler extends GridSampler {
     if (dimensionX <= 0 || dimensionY <= 0) {
       throw NotFoundException.getNotFoundInstance();      
     }
+    List<CoordinateXY> originalCoordinates = new ArrayList<>();
     BitMatrix bits = new BitMatrix(dimensionX, dimensionY);
     float[] points = new float[2 * dimensionX];
     for (int y = 0; y < dimensionY; y++) {
@@ -65,12 +69,39 @@ public final class DefaultGridSampler extends GridSampler {
       // sufficient to check the endpoints
       checkAndNudgePoints(image, points);
       try {
+        int firstBlack = 0;
+        boolean firstB = false;
+        int lastBlack = max-2;
         for (int x = 0; x < max; x += 2) {
           if (image.get((int) points[x], (int) points[x + 1])) {
             // Black(-ish) pixel
             bits.set(x / 2, y);
+
+            //eshenlog
+            if (!firstB) {
+              firstBlack = x;
+              firstB = true;
+            } else {
+             lastBlack = x;
+            }
           }
         }
+        //eshenlog
+        // add topLeft, topRight, bottomLeft, bottomRight
+        if(y==0 || y==dimensionY -1) {
+
+//            originalCoordinates.add(new CoordinateXY((int) points[0], (int) points[1]));
+//            originalCoordinates.add(new CoordinateXY((int) points[max -2], (int) points[max -2 + 1]));
+
+          originalCoordinates.add(new CoordinateXY((int) points[firstBlack], (int) points[firstBlack+1]));
+          originalCoordinates.add(new CoordinateXY((int) points[lastBlack], (int) points[lastBlack + 1]));
+        } else if (y == dimensionY/2) {
+          int mid = (max -1)/2;
+          originalCoordinates.add(new CoordinateXY((int) points[mid], (int) points[mid+1]));
+
+
+        }
+
       } catch (ArrayIndexOutOfBoundsException aioobe) {
         // This feels wrong, but, sometimes if the finder patterns are misidentified, the resulting
         // transform gets "twisted" such that it maps a straight line of points to a set of points
@@ -82,6 +113,7 @@ public final class DefaultGridSampler extends GridSampler {
         throw NotFoundException.getNotFoundInstance();
       }
     }
+    bits.setOriginalSqrCoordinates(originalCoordinates);
     return bits;
   }
 

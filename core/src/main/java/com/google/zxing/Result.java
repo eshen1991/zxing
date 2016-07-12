@@ -16,7 +16,12 @@
 
 package com.google.zxing;
 
+import com.google.zxing.common.BitXY;
+import com.google.zxing.common.CoordinateXY;
+import com.google.zxing.common.MatrixRec;
+
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +37,79 @@ public final class Result {
   private final BarcodeFormat format;
   private Map<ResultMetadataType,Object> resultMetadata;
   private final long timestamp;
+  private BitXY topLeft;
+  private BitXY bottomRight;
+  long decodeTime;
+  long detectTime;
+  MatrixRec matrixRec;
+  int width;
+  int height;
+
+  private List<CoordinateXY> originalSqrCoordinates;
+
+  public List<CoordinateXY> getOriginalSqrCoordinates() {
+    return originalSqrCoordinates;
+  }
+
+  public void setOriginalSqrCoordinates(List<CoordinateXY> originalSqrCoordinates) {
+    this.originalSqrCoordinates = originalSqrCoordinates;
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
+  public void setWidth(int width) {
+    this.width = width;
+  }
+
+  public int getHeight() {
+    return height;
+  }
+
+  public void setHeight(int height) {
+    this.height = height;
+  }
+
+  public MatrixRec getMatrixRec() {
+    return matrixRec;
+  }
+
+  public void setMatrixRec(MatrixRec matrixRec) {
+    this.matrixRec = matrixRec;
+  }
+
+  public long getDecodeTime() {
+    return decodeTime;
+  }
+
+  public void setDecodeTime(long decodeTime) {
+    this.decodeTime = decodeTime;
+  }
+
+  public long getDetectTime() {
+    return detectTime;
+  }
+
+  public void setDetectTime(long detectTime) {
+    this.detectTime = detectTime;
+  }
+
+  public BitXY getTopLeft() {
+    return topLeft;
+  }
+
+  public void setTopLeft(BitXY topLeft) {
+    this.topLeft = topLeft;
+  }
+
+  public BitXY getBottomRight() {
+    return bottomRight;
+  }
+
+  public void setBottomRight(BitXY bottomRight) {
+    this.bottomRight = bottomRight;
+  }
 
   public Result(String text,
                 byte[] rawBytes,

@@ -16,7 +16,10 @@
 
 package com.google.zxing.common;
 
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * <p>Represents a 2D matrix of bits. In function arguments below, and throughout the common
@@ -39,6 +42,9 @@ public final class BitMatrix implements Cloneable {
   private final int height;
   private final int rowSize;
   private final int[] bits;
+  //private Map<String, Integer> originalxyMap = new HashMap<String, Integer>();
+  private List<CoordinateXY> originalSqrCoordinates = new ArrayList<>();
+
 
   // A helper to construct a square matrix.
   public BitMatrix(int dimension) {
@@ -142,6 +148,33 @@ public final class BitMatrix implements Cloneable {
     bits[offset] |= 1 << (x & 0x1f);
   }
 
+ /* public void setOriginalXY(int x, int y, int origX, int origY) {
+    originalxyMap.put("[" + x + "," + y + "]", origX + "," + origY);
+  }*/
+
+  //eshenlog
+
+  public List<CoordinateXY> getOriginalSqrCoordinates() {
+    return originalSqrCoordinates;
+  }
+
+  public void setOriginalSqrCoordinates(List<CoordinateXY> originalSqrCoordinates) {
+    this.originalSqrCoordinates = originalSqrCoordinates;
+  }
+
+ /* public void set(int x, int y, int luminanceOffset) {
+    int offset = y * rowSize + (x / 32);
+    bits[offset] |= 1 << (x & 0x1f);
+    originalxyMap.put("[" + x + "," + y + "]", luminanceOffset);
+    //System.out.print("**luminances offset : " + (offset + x) + "  ");
+    //System.out.print("[" + x + ", " + y + ", " + bits[offset] + "] **");
+    //System.out.println();
+  }*/
+
+  /*public int getOrginalXY(int x, int y) {
+    return originalxyMap.get("[" + x + "," + y + "]");
+  }
+*/
   public void unset(int x, int y) {
     int offset = y * rowSize + (x / 32);
     bits[offset] &= ~(1 << (x & 0x1f));

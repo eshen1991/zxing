@@ -26,9 +26,14 @@ import com.google.zxing.Reader;
 import com.google.zxing.Result;
 import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
+
+
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.BitXY;
+import com.google.zxing.common.CoordinateXY;
 import com.google.zxing.common.DecoderResult;
 import com.google.zxing.common.DetectorResult;
+import com.google.zxing.common.MatrixRec;
 import com.google.zxing.qrcode.decoder.Decoder;
 import com.google.zxing.qrcode.decoder.QRCodeDecoderMetaData;
 import com.google.zxing.qrcode.detector.Detector;
@@ -64,18 +69,56 @@ public class QRCodeReader implements Reader {
     return decode(image, null);
   }
 
+  private BitXY getBixXY(BitMatrix bitMatrix, int corner){
+    int x = 0;
+    int y = 0;
+    int offset =0;
+    if (corner == 0) {
+      x = bitMatrix.getTopLeftOnBit()[0];
+      y = bitMatrix.getTopLeftOnBit()[1];
+    } else {
+      x = bitMatrix.getBottomRightOnBit()[0];
+      y = bitMatrix.getBottomRightOnBit()[1];
+    }
+    //offset = bitMatrix.getOrginalXY(x, y);
+    return new BitXY(x, y, offset);
+  }
   @Override
   public final Result decode(BinaryBitmap image, Map<DecodeHintType,?> hints)
       throws NotFoundException, ChecksumException, FormatException {
     DecoderResult decoderResult;
     ResultPoint[] points;
+    long detectTime = 0;
+    long decodeTime = 0;
+    BitXY topLeft = null;
+    BitXY bottomRight = null;
+    MatrixRec rec = null;
+    List<CoordinateXY> originalSqrCoordinates = null;
+    int imgWidth = 0;
+    int imgHeight = 0;
     if (hints != null && hints.containsKey(DecodeHintType.PURE_BARCODE)) {
       BitMatrix bits = extractPureBits(image.getBlackMatrix());
       decoderResult = decoder.decode(bits, hints);
       points = NO_POINTS;
     } else {
+      long begin = System.currentTimeMillis();
       DetectorResult detectorResult = new Detector(image.getBlackMatrix()).detect(hints);
+      long end = System.currentTimeMillis();
+      detectTime = end - begin;
+      //topLeft = new BitXY(detectorResult.getBits().getTopLeftOnBit()[0], detectorResult.getBits().getTopLeftOnBit()[1]);
+      //bottomRight = new BitXY(detectorResult.getBits().getBottomRightOnBit()[0], detectorResult.getBits().getBottomRightOnBit()[1]);
+      topLeft = getBixXY(detectorResult.getBits(), 0);
+      bottomRight = getBixXY(detectorResult.getBits(), 1);
+      int[] recArray = detectorResult.getBits().getEnclosingRectangle();
+      rec = new MatrixRec(recArray[0], recArray[1], recArray[2], recArray[3]);
+      imgWidth = detectorResult.getBits().getWidth();
+      imgHeight = detectorResult.getBits().getHeight();
+      originalSqrCoordinates = detectorResult.getBits().getOriginalSqrCoordinates();
+      begin = System.currentTimeMillis();
+
       decoderResult = decoder.decode(detectorResult.getBits(), hints);
+      end = System.currentTimeMillis();
+      decodeTime = end - begin;
       points = detectorResult.getPoints();
     }
 
@@ -99,6 +142,17 @@ public class QRCodeReader implements Reader {
       result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_PARITY,
                          decoderResult.getStructuredAppendParity());
     }
+
+    //eshenlog
+
+    result.setTopLeft(topLeft);
+    result.setBottomRight(bottomRight);
+    result.setDetectTime(detectTime);
+    result.setDecodeTime(decodeTime);
+    result.setMatrixRec(rec);
+    result.setWidth(imgWidth);
+    result.setHeight(imgHeight);
+    result.setOriginalSqrCoordinates(originalSqrCoordinates);
     return result;
   }
 

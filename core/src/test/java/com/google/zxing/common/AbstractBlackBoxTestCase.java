@@ -125,7 +125,12 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
   // not return SummaryResults.
   @Test
   public void testBlackBox() throws IOException {
+    long begin = System.currentTimeMillis();
     testBlackBoxCountingResults(true);
+    long end = System.currentTimeMillis();
+    long diff = end - begin;
+    log.info("Total execution time: " + diff + " ms" );
+
   }
 
   public final SummaryResults testBlackBoxCountingResults(boolean assertOnFailure) throws IOException {
@@ -168,7 +173,9 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
         float rotation = testResults.get(x).getRotation();
         BufferedImage rotatedImage = rotateImage(image, rotation);
         LuminanceSource source = new BufferedImageLuminanceSource(rotatedImage);
+        log.info("   ### luminanceSource(width, height): " + source.getWidth() + ", " + source.getWidth());
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+        log.info("   ### bitmap(width, height): "  + bitmap.getWidth() + ", " + bitmap.getWidth());
         try {
           if (decode(bitmap, rotation, expectedText, expectedMetadata, false)) {
             passedCounts[x]++;
@@ -178,7 +185,7 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
         } catch (ReaderException ignored) {
           log.fine(String.format("could not read at rotation %f", rotation));
         }
-        try {
+/*        try {
           if (decode(bitmap, rotation, expectedText, expectedMetadata, true)) {
             tryHarderCounts[x]++;
           } else {
@@ -186,7 +193,7 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
           }
         } catch (ReaderException ignored) {
           log.fine(String.format("could not read at rotation %f w/TH", rotation));
-        }
+        }*/
       }
     }
 
@@ -264,6 +271,7 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
 
     Result result = barcodeReader.decode(source, hints);
 
+
     if (expectedFormat != result.getBarcodeFormat()) {
       log.info(String.format("Format mismatch: expected '%s' but got '%s'%s",
                              expectedFormat, result.getBarcodeFormat(), suffix));
@@ -289,6 +297,16 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
       }
     }
 
+    if (!tryHarder) {
+      log.info("   ### blackMatrixImage(width, height): " + "[" +result.getWidth() + ", " + result.getHeight() + "]");
+      log.info("       detectTime:  " + result.getDetectTime() + " ms");
+      log.info("       decodeTime:  " + result.getDecodeTime() + " ms");
+      log.info("       topLeft_1_bit(x,y): " + result.getTopLeft().toString() + " bottomRight_1_bit(x,y): " + result.getBottomRight().toString());
+      log.info("       enclosing rec(left, top, width, height): " + result.getMatrixRec().toString());
+
+    }
+
+
     return true;
   }
 
@@ -301,7 +319,7 @@ public abstract class AbstractBlackBoxTestCase extends Assert {
     return stringContents;
   }
 
-  protected static BufferedImage rotateImage(BufferedImage original, float degrees) {
+  public static BufferedImage rotateImage(BufferedImage original, float degrees) {
     if (degrees == 0.0f) {
       return original;
     }
